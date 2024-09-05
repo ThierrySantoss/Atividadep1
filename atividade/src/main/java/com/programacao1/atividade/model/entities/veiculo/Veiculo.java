@@ -1,161 +1,212 @@
 package com.programacao1.atividade.model.entities.veiculo;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.List;
 
-import jakarta.persistence.Convert;
-import jakarta.persistence.Converter;
+import com.programacao1.atividade.model.entities.FuncionarioVeiculo;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "veiculos")
 public class Veiculo {
-	
+
 	@Id
-	private String id;
-	private String modelo;
-	private String marca;
-	private String categoria;
-	private String anoDeFabricacao;
-	private String anoDeCompra;
-	private String tipoCombustivel;
-	private int quantidadePassageiros;
-	private String habilitacao;
-	private String placa;
-	private double quilometragem;
-	private static final AtomicInteger counter = new AtomicInteger(1);
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
-    
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int id;
+
+	private String idAno;
+	// TODO : Ver com o professor se isso ta certo.
+
+	@NotBlank
+	private String modeloVeiculo;
+
+	@NotBlank
+	private String marcaDoVeiculo;
+
+	@NotBlank
+	private String categoriaDoVeiculo;
+
+	@NotBlank
+	@Pattern(regexp = "^(0[1-9]|[1-2][0-9]|3[0-1])/(0[1-9]|1[0-2])/([1-9][0-9]{3})$", message = "Data deve estar no formato dd/mm/yyy!")
+	private String anoDeFabricacaoDoVeiculo;
+	// TODO : Implementar um validador para não permitir ano no futuro
+
+	private String anoDeCompraDoVeiculo;
+
+	@NotBlank
+	private String tipoCombustivelDoVeiculo;
+
+	@Min(1)
+	@Max(50)
+	private int quantidadePassageirosDoVeiculo;
+
+	@NotBlank
+	@Pattern(regexp = "^[A-E]$", message = "Habilitação válidas: A, B, C, D, E")
+	private String habilitacaoDoVeiculo;
+
+	@NotBlank
+	@Pattern(regexp = "^([A-Z]{4})([0-9]{3})$", message = "Placa deve conter 4 letras e 3 numeros!")
+	private String placaDoVeiculo;
+
+	@Min(0)
+	private double quilometragemDoVeiculo;
 	
+	@OneToMany(mappedBy = "veiculo", cascade = CascadeType.PERSIST)
+	List<FuncionarioVeiculo> funcionarios = new ArrayList<>();
+
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+
 	public Veiculo() {
-		
-	}
-	
-	
 
-	public Veiculo(
-			String modelo, 
-			String marca, 
-			String categoria, 
-			String anoDeFabricacao,
-			String tipoCombustivel, 
-			int quantidadePassageiros, 
-			String habilitacao, 
-			String placa,
-			double quilometragem) {
+	}
+
+	public Veiculo(String modeloVeiculo, String marcaDoVeiculo, String categoriaDoVeiculo,
+			String anoDeFabricacaoDoVeiculo, String tipoCombustivelDoVeiculo, int quantidadePassageirosDoVeiculo,
+			String habilitacaoDoVeiculo, String placaDoVeiculo, double quilometragemDoVeiculo) {
 		super();
-		this.modelo = modelo;
-		this.marca = marca;
-		this.categoria = categoria;
-		this.anoDeFabricacao = anoDeFabricacao;
-		this.anoDeCompra = String.format("%s", new SimpleDateFormat("dd/MM/yyyy").format(new Date())); 
-		this.tipoCombustivel = tipoCombustivel;
-		this.quantidadePassageiros = quantidadePassageiros;
-		this.habilitacao = habilitacao;
-		this.placa = placa;
-		this.quilometragem = quilometragem;
+		this.modeloVeiculo = modeloVeiculo;
+		this.marcaDoVeiculo = marcaDoVeiculo;
+		this.categoriaDoVeiculo = categoriaDoVeiculo;
+		this.anoDeFabricacaoDoVeiculo = anoDeFabricacaoDoVeiculo;
+		this.tipoCombustivelDoVeiculo = tipoCombustivelDoVeiculo;
+		this.quantidadePassageirosDoVeiculo = quantidadePassageirosDoVeiculo;
+		this.habilitacaoDoVeiculo = habilitacaoDoVeiculo;
+		this.placaDoVeiculo = placaDoVeiculo;
+		this.quilometragemDoVeiculo = quilometragemDoVeiculo;
 	}
 
-	@PrePersist
-	public void gerarId() {
+	@PostPersist
+	public void posPersistencia() {
+		// Lógica do método gerarID
 		String year = sdf.format(new Date());
-	    int currentCount = counter.getAndIncrement();
-	    this.id = String.format("%02d/%s", currentCount, year);
+		this.idAno = String.format("%02d/%s", this.id, year);
+		this.anoDeCompraDoVeiculo = String.format("%s", new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
+		
+		// Lógica do método para restringir anoDeFabricacaoDoVeiculo seja no futuro.
+		Integer yearInt = Integer.parseInt(sdf.format(new Date()));
+		Integer dataFormatada = Integer.parseInt(this.anoDeFabricacaoDoVeiculo.substring(6, 10));
+		if(dataFormatada > yearInt) {
+			this.anoDeFabricacaoDoVeiculo = null;
+		}
 	}
 
-	public String getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
-	public String getModelo() {
-		return modelo;
+	public String getIdAno() {
+		return idAno;
 	}
 
-	public void setModelo(String modelo) {
-		this.modelo = modelo;
+	public void setIdAno(String idAno) {
+		this.idAno = idAno;
 	}
 
-	public String getMarca() {
-		return marca;
+	public String getModeloVeiculo() {
+		return modeloVeiculo;
 	}
 
-	public void setMarca(String marca) {
-		this.marca = marca;
+	public void setModeloVeiculo(String modeloVeiculo) {
+		this.modeloVeiculo = modeloVeiculo;
 	}
 
-	public String getCategoria() {
-		return categoria;
+	public String getMarcaDoVeiculo() {
+		return marcaDoVeiculo;
 	}
 
-	public void setCategoria(String categoria) {
-		this.categoria = categoria;
+	public void setMarcaDoVeiculo(String marcaDoVeiculo) {
+		this.marcaDoVeiculo = marcaDoVeiculo;
 	}
 
-	public String getAnoDeFabricacao() {
-		return anoDeFabricacao;
+	public String getCategoriaDoVeiculo() {
+		return categoriaDoVeiculo;
 	}
 
-	public void setAnoDeFabricacao(String anoDeFabricacao) {
-		this.anoDeFabricacao = anoDeFabricacao;
+	public void setCategoriaDoVeiculo(String categoriaDoVeiculo) {
+		this.categoriaDoVeiculo = categoriaDoVeiculo;
 	}
 
-	public String getAnoDeCompra() {
-		return anoDeCompra;
+	public String getAnoDeFabricacaoDoVeiculo() {
+		return anoDeFabricacaoDoVeiculo;
 	}
 
-	public void setAnoDeCompra(String anoDeCompra) {
-		this.anoDeCompra = anoDeCompra;
+	public void setAnoDeFabricacaoDoVeiculo(String anoDeFabricacaoDoVeiculo) {
+		this.anoDeFabricacaoDoVeiculo = anoDeFabricacaoDoVeiculo;
 	}
 
-	public String getTipoCombustivel() {
-		return tipoCombustivel;
+	public String getAnoDeCompraDoVeiculo() {
+		return anoDeCompraDoVeiculo;
 	}
 
-	public void setTipoCombustivel(String tipoCombustivel) {
-		this.tipoCombustivel = tipoCombustivel;
+	public void setAnoDeCompraDoVeiculo(String anoDeCompraDoVeiculo) {
+		this.anoDeCompraDoVeiculo = anoDeCompraDoVeiculo;
 	}
 
-	public int getQuantidadePassageiros() {
-		return quantidadePassageiros;
+	public String getTipoCombustivelDoVeiculo() {
+		return tipoCombustivelDoVeiculo;
 	}
 
-	public void setQuantidadePassageiros(int quantidadePassageiros) {
-		this.quantidadePassageiros = quantidadePassageiros;
+	public void setTipoCombustivelDoVeiculo(String tipoCombustivelDoVeiculo) {
+		this.tipoCombustivelDoVeiculo = tipoCombustivelDoVeiculo;
 	}
 
-	public String getHabilitacao() {
-		return habilitacao;
+	public int getQuantidadePassageirosDoVeiculo() {
+		return quantidadePassageirosDoVeiculo;
 	}
 
-	public void setHabilitacao(String habilitacao) {
-		this.habilitacao = habilitacao;
+	public void setQuantidadePassageirosDoVeiculo(int quantidadePassageirosDoVeiculo) {
+		this.quantidadePassageirosDoVeiculo = quantidadePassageirosDoVeiculo;
 	}
 
-	public String getPlaca() {
-		return placa;
+	public String getHabilitacaoDoVeiculo() {
+		return habilitacaoDoVeiculo;
 	}
 
-	public void setPlaca(String placa) {
-		this.placa = placa;
+	public void setHabilitacaoDoVeiculo(String habilitacaoDoVeiculo) {
+		this.habilitacaoDoVeiculo = habilitacaoDoVeiculo;
 	}
 
-	public double getQuilometragem() {
-		return quilometragem;
+	public String getPlacaDoVeiculo() {
+		return placaDoVeiculo;
 	}
 
-	public void setQuilometragem(double quilometragem) {
-		this.quilometragem = quilometragem;
+	public void setPlacaDoVeiculo(String placaDoVeiculo) {
+		this.placaDoVeiculo = placaDoVeiculo;
 	}
-	
-	
+
+	public double getQuilometragemDoVeiculo() {
+		return quilometragemDoVeiculo;
+	}
+
+	public void setQuilometragemDoVeiculo(double quilometragemDoVeiculo) {
+		this.quilometragemDoVeiculo = quilometragemDoVeiculo;
+	}
+
+	public List<FuncionarioVeiculo> getFuncionarios() {
+		return funcionarios;
+	}
+
+	public void setFuncionarios(List<FuncionarioVeiculo> funcionarios) {
+		this.funcionarios = funcionarios;
+	}
 	
 	
 
