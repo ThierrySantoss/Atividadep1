@@ -1,5 +1,7 @@
 package com.programacao1.atividade.model.entities;
 
+import java.time.LocalDateTime;
+
 import com.programacao1.atividade.model.entities.funcionario.Funcionario;
 import com.programacao1.atividade.model.entities.veiculo.Veiculo;
 
@@ -12,25 +14,25 @@ import jakarta.persistence.ManyToOne;
 
 @Entity
 public class FuncionarioVeiculo {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "funcionario_id")
 	private Funcionario funcionario;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "veiculo_id")
 	private Veiculo veiculo;
-	
-	private String dataSaida;
-	
-	private String dataChegada;
-	
+
+	private LocalDateTime dataSaida;
+
+	private LocalDateTime dataChegada;
+
 	public FuncionarioVeiculo() {
-		
+
 	}
 
 	public FuncionarioVeiculo(Funcionario funcionario, Veiculo veiculo) {
@@ -63,22 +65,20 @@ public class FuncionarioVeiculo {
 		this.veiculo = veiculo;
 	}
 
-	public String getDataSaida() {
+	public LocalDateTime getDataSaida() {
 		return dataSaida;
 	}
 
-	public void setDataSaida(String dataSaida) {
+	public void setDataSaida(LocalDateTime dataSaida) {
 		this.dataSaida = dataSaida;
 	}
 
-	public String getDataChegada() {
+	public LocalDateTime getDataChegada() {
 		return dataChegada;
 	}
 
-	public void setDataChegada(String dataChegada) {
+	public void setDataChegada(LocalDateTime dataChegada) {
 		this.dataChegada = dataChegada;
 	}
-	
-	
 
 }

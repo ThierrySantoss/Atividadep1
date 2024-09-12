@@ -1,22 +1,25 @@
 package com.programacao1.atividade.model.entities.funcionario;
 
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.programacao1.atividade.model.entities.FuncionarioVeiculo;
+import com.programacao1.atividade.model.entities.veiculo.Habilitacao;
+import com.programacao1.atividade.validators.DataNascimentoValidador;
+import com.programacao1.atividade.validators.HabilitacaoFuncionarioValidador;
+import com.programacao1.atividade.validators.RgValidador;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "funcionarios")
@@ -26,48 +29,41 @@ public class Funcionario {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
-	@NotBlank(message = "Nome não pode estar em branco!")
+	@NotBlank
 	private String nome;
 
-	@NotBlank
-	@Pattern(regexp = "^(0[1-9]|[1-2][0-9]|3[0-1])/(0[1-9]|1[0-2])/([1-9][0-9]{3})$", message = "Data deve estar no formato dd/mm/yyy!")
-	private String dataNascimento;
+	@DataNascimentoValidador
+	private LocalDate dataNascimento;
 
-	@NotBlank
-	@Pattern(regexp = "\\d{9}", message = "Rg Invalido, deve conter 9 digitos e apenas numeros! ")
+	@RgValidador
 	private String rg;
-	// TODO : Ver com o professor um validador para rg
 
-	@Pattern(regexp = "^[A-E]+$", message = "Habilitação válidas: A, B, C, D, E")
-	private String habilitaçãoFuncionario;
-	
+	@HabilitacaoFuncionarioValidador
+	private List<Habilitacao> habilitacaoFuncionario;
+
 	@OneToMany(mappedBy = "funcionario", cascade = CascadeType.PERSIST)
+	@JsonIgnore
 	List<FuncionarioVeiculo> veiculos = new ArrayList<>();
-	
-	private String penalizacao;
-	
+	// TODO: falar com o professor so esse JsonIgnore, pq tava em uma especie de
+	// loop e isso resovel e perguntar se precisa tb colocar na outra classe
+	// veiculo.
+
+	@ElementCollection
+	private List<Penalizacao> penalizacao = new ArrayList<Penalizacao>();
+
+	LocalDate dataPenalizacao;
 
 	public Funcionario() {
 
 	}
 
-	public Funcionario(String nome, String dataNascimento, String rg, String habilitaçãoFuncionario) {
+	public Funcionario(@NotBlank String nome, LocalDate dataNascimento, String rg,
+			List<Habilitacao> habilitacaoFuncionario) {
 		super();
 		this.nome = nome;
 		this.dataNascimento = dataNascimento;
 		this.rg = rg;
-		this.habilitaçãoFuncionario = habilitaçãoFuncionario;
-	}
-	
-	@PostPersist
-	public void posPersistencia() {
-		// Lógica do método para restringir dataNascimento seja no futuro.
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
-		Integer yearInt = Integer.parseInt(sdf.format(new Date()));
-		Integer dataFormatada = Integer.parseInt(this.dataNascimento.substring(6, 10));
-		if(dataFormatada > yearInt) {
-			this.dataNascimento = null;
-		}
+		this.habilitacaoFuncionario = habilitacaoFuncionario;
 	}
 
 	public int getId() {
@@ -86,11 +82,11 @@ public class Funcionario {
 		this.nome = nome;
 	}
 
-	public String getDataNascimento() {
+	public LocalDate getDataNascimento() {
 		return dataNascimento;
 	}
 
-	public void setDataNascimento(String dataNascimento) {
+	public void setDataNascimento(LocalDate dataNascimento) {
 		this.dataNascimento = dataNascimento;
 	}
 
@@ -102,12 +98,12 @@ public class Funcionario {
 		this.rg = rg;
 	}
 
-	public String getHabilitaçãoFuncionario() {
-		return habilitaçãoFuncionario;
+	public List<Habilitacao> getHabilitacaoFuncionario() {
+		return habilitacaoFuncionario;
 	}
 
-	public void setHabilitaçãoFuncionario(String habilitaçãoFuncionario) {
-		this.habilitaçãoFuncionario = habilitaçãoFuncionario;
+	public void setHabilitacaoFuncionario(List<Habilitacao> habilitacaoFuncionario) {
+		this.habilitacaoFuncionario = habilitacaoFuncionario;
 	}
 
 	public List<FuncionarioVeiculo> getVeiculos() {
@@ -118,14 +114,24 @@ public class Funcionario {
 		this.veiculos = veiculos;
 	}
 
-	public String getPenalizacao() {
+	public List<Penalizacao> getPenalizacao() {
 		return penalizacao;
 	}
 
-	public void setPenalizacao(String penalizacao) {
+	public void setPenalizacao(List<Penalizacao> penalizacao) {
 		this.penalizacao = penalizacao;
 	}
-	
-	
+
+	public LocalDate getDataPenalizacao() {
+		return dataPenalizacao;
+	}
+
+	public void setDataPenalizacao(LocalDate dataPenalizacao) {
+		this.dataPenalizacao = dataPenalizacao;
+	}
+
+	public void adicionarPenalização(Penalizacao penalização) {
+		this.penalizacao.add(penalização);
+	}
 
 }

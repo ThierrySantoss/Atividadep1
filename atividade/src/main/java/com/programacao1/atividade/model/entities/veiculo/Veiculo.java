@@ -1,11 +1,14 @@
 package com.programacao1.atividade.model.entities.veiculo;
 
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.programacao1.atividade.model.entities.FuncionarioVeiculo;
+import com.programacao1.atividade.validators.AnoDeFabricacaoValidador;
+import com.programacao1.atividade.validators.HabilitacaoVeiculoValidador;
+import com.programacao1.atividade.validators.PlacaValidador;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -18,7 +21,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "veiculos")
@@ -28,8 +31,8 @@ public class Veiculo {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
-	private String idAno;
-	// TODO : Ver com o professor se isso ta certo.
+	private String Chave;
+	// TODO : ver com o professor, não achei outra forma.
 
 	@NotBlank
 	private String modeloVeiculo;
@@ -37,46 +40,42 @@ public class Veiculo {
 	@NotBlank
 	private String marcaDoVeiculo;
 
-	@NotBlank
-	private String categoriaDoVeiculo;
+	@NotNull(message = "Categoria não pode ser nulo")
+	private Categoria categoriaDoVeiculo;
 
-	@NotBlank
-	@Pattern(regexp = "^(0[1-9]|[1-2][0-9]|3[0-1])/(0[1-9]|1[0-2])/([1-9][0-9]{3})$", message = "Data deve estar no formato dd/mm/yyy!")
-	private String anoDeFabricacaoDoVeiculo;
-	// TODO : Implementar um validador para não permitir ano no futuro
+	@AnoDeFabricacaoValidador
+	private Integer anoDeFabricacaoDoVeiculo;
 
-	private String anoDeCompraDoVeiculo;
+	private LocalDate anoDeCompraDoVeiculo;
 
-	@NotBlank
-	private String tipoCombustivelDoVeiculo;
+	@NotNull(message = "Combustivel não pode ser null")
+	private TipoCombustivel tipoCombustivelDoVeiculo;
 
 	@Min(1)
 	@Max(50)
 	private int quantidadePassageirosDoVeiculo;
 
-	@NotBlank
-	@Pattern(regexp = "^[A-E]$", message = "Habilitação válidas: A, B, C, D, E")
-	private String habilitacaoDoVeiculo;
+	@HabilitacaoVeiculoValidador
+	private Habilitacao habilitacaoDoVeiculo;
 
-	@NotBlank
-	@Pattern(regexp = "^([A-Z]{4})([0-9]{3})$", message = "Placa deve conter 4 letras e 3 numeros!")
+	@PlacaValidador
 	private String placaDoVeiculo;
 
 	@Min(0)
 	private double quilometragemDoVeiculo;
-	
-	@OneToMany(mappedBy = "veiculo", cascade = CascadeType.PERSIST)
-	List<FuncionarioVeiculo> funcionarios = new ArrayList<>();
 
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+	@OneToMany(mappedBy = "veiculo", cascade = CascadeType.PERSIST)
+	@JsonIgnore
+	List<FuncionarioVeiculo> funcionarios = new ArrayList<>();
 
 	public Veiculo() {
 
 	}
 
-	public Veiculo(String modeloVeiculo, String marcaDoVeiculo, String categoriaDoVeiculo,
-			String anoDeFabricacaoDoVeiculo, String tipoCombustivelDoVeiculo, int quantidadePassageirosDoVeiculo,
-			String habilitacaoDoVeiculo, String placaDoVeiculo, double quilometragemDoVeiculo) {
+	public Veiculo(String modeloVeiculo, String marcaDoVeiculo, Categoria categoriaDoVeiculo,
+			Integer anoDeFabricacaoDoVeiculo, TipoCombustivel tipoCombustivelDoVeiculo,
+			int quantidadePassageirosDoVeiculo, Habilitacao habilitacaoDoVeiculo, String placaDoVeiculo,
+			double quilometragemDoVeiculo) {
 		super();
 		this.modeloVeiculo = modeloVeiculo;
 		this.marcaDoVeiculo = marcaDoVeiculo;
@@ -92,16 +91,11 @@ public class Veiculo {
 	@PostPersist
 	public void posPersistencia() {
 		// Lógica do método gerarID
-		String year = sdf.format(new Date());
-		this.idAno = String.format("%02d/%s", this.id, year);
-		this.anoDeCompraDoVeiculo = String.format("%s", new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
-		
-		// Lógica do método para restringir anoDeFabricacaoDoVeiculo seja no futuro.
-		Integer yearInt = Integer.parseInt(sdf.format(new Date()));
-		Integer dataFormatada = Integer.parseInt(this.anoDeFabricacaoDoVeiculo.substring(6, 10));
-		if(dataFormatada > yearInt) {
-			this.anoDeFabricacaoDoVeiculo = null;
-		}
+		String gerarChave = String.format("%d/%d", this.id, LocalDate.now().getYear());
+		this.Chave = gerarChave;
+
+		// Setando o ano de Compra
+		this.anoDeCompraDoVeiculo = LocalDate.now();
 	}
 
 	public int getId() {
@@ -112,12 +106,12 @@ public class Veiculo {
 		this.id = id;
 	}
 
-	public String getIdAno() {
-		return idAno;
+	public String getChave() {
+		return Chave;
 	}
 
-	public void setIdAno(String idAno) {
-		this.idAno = idAno;
+	public void setChave(String chave) {
+		Chave = chave;
 	}
 
 	public String getModeloVeiculo() {
@@ -136,35 +130,35 @@ public class Veiculo {
 		this.marcaDoVeiculo = marcaDoVeiculo;
 	}
 
-	public String getCategoriaDoVeiculo() {
+	public Categoria getCategoriaDoVeiculo() {
 		return categoriaDoVeiculo;
 	}
 
-	public void setCategoriaDoVeiculo(String categoriaDoVeiculo) {
+	public void setCategoriaDoVeiculo(Categoria categoriaDoVeiculo) {
 		this.categoriaDoVeiculo = categoriaDoVeiculo;
 	}
 
-	public String getAnoDeFabricacaoDoVeiculo() {
+	public Integer getAnoDeFabricacaoDoVeiculo() {
 		return anoDeFabricacaoDoVeiculo;
 	}
 
-	public void setAnoDeFabricacaoDoVeiculo(String anoDeFabricacaoDoVeiculo) {
+	public void setAnoDeFabricacaoDoVeiculo(Integer anoDeFabricacaoDoVeiculo) {
 		this.anoDeFabricacaoDoVeiculo = anoDeFabricacaoDoVeiculo;
 	}
 
-	public String getAnoDeCompraDoVeiculo() {
+	public LocalDate getAnoDeCompraDoVeiculo() {
 		return anoDeCompraDoVeiculo;
 	}
 
-	public void setAnoDeCompraDoVeiculo(String anoDeCompraDoVeiculo) {
+	public void setAnoDeCompraDoVeiculo(LocalDate anoDeCompraDoVeiculo) {
 		this.anoDeCompraDoVeiculo = anoDeCompraDoVeiculo;
 	}
 
-	public String getTipoCombustivelDoVeiculo() {
+	public TipoCombustivel getTipoCombustivelDoVeiculo() {
 		return tipoCombustivelDoVeiculo;
 	}
 
-	public void setTipoCombustivelDoVeiculo(String tipoCombustivelDoVeiculo) {
+	public void setTipoCombustivelDoVeiculo(TipoCombustivel tipoCombustivelDoVeiculo) {
 		this.tipoCombustivelDoVeiculo = tipoCombustivelDoVeiculo;
 	}
 
@@ -176,11 +170,11 @@ public class Veiculo {
 		this.quantidadePassageirosDoVeiculo = quantidadePassageirosDoVeiculo;
 	}
 
-	public String getHabilitacaoDoVeiculo() {
+	public Habilitacao getHabilitacaoDoVeiculo() {
 		return habilitacaoDoVeiculo;
 	}
 
-	public void setHabilitacaoDoVeiculo(String habilitacaoDoVeiculo) {
+	public void setHabilitacaoDoVeiculo(Habilitacao habilitacaoDoVeiculo) {
 		this.habilitacaoDoVeiculo = habilitacaoDoVeiculo;
 	}
 
@@ -207,7 +201,5 @@ public class Veiculo {
 	public void setFuncionarios(List<FuncionarioVeiculo> funcionarios) {
 		this.funcionarios = funcionarios;
 	}
-	
-	
 
 }

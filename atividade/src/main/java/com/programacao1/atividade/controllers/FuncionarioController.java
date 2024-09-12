@@ -1,8 +1,6 @@
 package com.programacao1.atividade.controllers;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,47 +12,56 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.programacao1.atividade.model.entities.funcionario.Funcionario;
+import com.programacao1.atividade.model.entities.funcionario.Penalizacao;
 import com.programacao1.atividade.model.repositories.FuncionarioRepository;
 
 @RestController
-@RequestMapping("/consecionaria")
+@RequestMapping("/consecionaria/funcionario")
 public class FuncionarioController {
-	
+
 	@Autowired
 	private FuncionarioRepository funcionarioRepository;
-	
-	@PostMapping("/funcionario")
+
+	@PostMapping
 	public Funcionario novoFuncionario(Funcionario funcionario) {
-		funcionarioRepository.save(funcionario);		
+		funcionarioRepository.save(funcionario);
 		return funcionario;
 	}
-	
+
 	@GetMapping
 	public Funcionario obterFuncionarioId(@RequestParam int id) {
 		return funcionarioRepository.findById(id).get();
 	}
-	
-	@PutMapping("/atribuirPenalizacao")
-	public Funcionario atribuirPenalizacao(int id, int penalizacao) {
+
+	@GetMapping("/obterFuncionariosMesPenalizaIterable")
+	public Iterable<Funcionario> obterFuncionariosMesPenalizaIterable(int mes) {
+		return funcionarioRepository.obterFuncionariosMesPenalizacao(mes);
+	}
+
+	@GetMapping("/obterFuncionarioPenalizacao")
+	public Iterable<Funcionario> obterFuncionarioPenalizacao() {
+		return funcionarioRepository.obterFuncionarioPenalizacao();
+	}
+
+	@PutMapping
+	public Funcionario atribuirPenalizacao(int id, Penalizacao penalizacao) {
 		Optional<Funcionario> funcionariooExiste = funcionarioRepository.findById(id);
 		Funcionario funcionarioAtualizar = funcionariooExiste.get();
-		
-		switch (penalizacao) {
-		case 1: {
-			if(funcionarioAtualizar.getPenalizacao() == null) {
-				LocalDate penalizacao1 = LocalDate.now().plus(1, ChronoUnit.MONTHS);
-				funcionarioAtualizar.setPenalizacao(penalizacao1.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-				funcionarioRepository.save(funcionarioAtualizar);
-				break;
-			
-			}
+
+		funcionarioAtualizar.adicionarPenalização(penalizacao);
+
+		if (penalizacao == Penalizacao.RestricaoDeConducaoDeVeículo) {
+			funcionarioAtualizar.setDataPenalizacao(LocalDate.now().plusMonths(1));
+		} else if (penalizacao == Penalizacao.RestricaoNaAreaDeJogos) {
+			funcionarioAtualizar.setDataPenalizacao(LocalDate.now().plusWeeks(1));
+		} else if (penalizacao == Penalizacao.PerdaDeAniversarioPremiado) {
+			funcionarioAtualizar.setDataPenalizacao(LocalDate.now().plusYears(1));
+		} else if (penalizacao == Penalizacao.ImpossibilidadeDeConducao) {
+			funcionarioAtualizar.setDataPenalizacao(LocalDate.now().plusYears(999));
 		}
-		
-		}
-		
+
+		funcionarioRepository.save(funcionarioAtualizar);
 		return funcionarioAtualizar;
-		
-	
 	}
 
 }
