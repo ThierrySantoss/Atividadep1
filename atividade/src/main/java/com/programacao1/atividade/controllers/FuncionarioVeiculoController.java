@@ -5,10 +5,8 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,11 +15,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.programacao1.atividade.model.entities.FuncionarioVeiculo;
+import com.programacao1.atividade.model.entities.FuncionarioVeiculoAux;
 import com.programacao1.atividade.model.entities.funcionario.Funcionario;
 import com.programacao1.atividade.model.entities.veiculo.Veiculo;
 import com.programacao1.atividade.model.repositories.FuncionarioRepository;
+import com.programacao1.atividade.model.repositories.FuncionarioVeiculoAuxRepository;
 import com.programacao1.atividade.model.repositories.FuncionarioVeiculoRepository;
 import com.programacao1.atividade.model.repositories.VeiculoRepository;
+
+import jakarta.transaction.Transactional;
 
 @RestController
 @RequestMapping("/consecionaria/funcionarioVeiculo")
@@ -35,6 +37,9 @@ public class FuncionarioVeiculoController {
 
 	@Autowired
 	VeiculoRepository veiculoRepository;
+	
+	@Autowired
+	FuncionarioVeiculoAuxRepository funcionarioVeiculoAuxRepository;
 
 	@PostMapping
 	public FuncionarioVeiculo novaSaida(Funcionario funcionario, Veiculo veiculo) {
@@ -84,11 +89,13 @@ public class FuncionarioVeiculoController {
 	}
 
 	@GetMapping("/obterMotoristasqueMaisDirigiram")
-	public ResponseEntity<?> obterMotoristasqueMaisDirigiram() {
-
+	@Transactional
+	public Iterable<FuncionarioVeiculoAux> obterMotoristasqueMaisDirigiram() {
 		Pageable page = PageRequest.of(0, 3);
-		Page<Object[]> resultado = funcionarioVeiculoRepository.obterMotoristasqueMaisDirigiram(page);
-		return ResponseEntity.ok(resultado);
+		funcionarioVeiculoAuxRepository.deleteAll();
+		funcionarioVeiculoAuxRepository.atualizarTabela();
+		return funcionarioVeiculoAuxRepository.obterMotoristasqueMaisDirigiram(page);
+
 	}
 
 }
