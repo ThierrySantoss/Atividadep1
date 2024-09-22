@@ -32,7 +32,6 @@ public class Veiculo {
 	private int id;
 
 	private String Chave;
-	// TODO : ver com o professor, não achei outra forma.
 
 	@NotBlank
 	private String modeloVeiculo;

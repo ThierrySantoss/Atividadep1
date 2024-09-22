@@ -2,7 +2,7 @@ package com.programacao1.atividade.model.entities.veiculo;
 
 public enum Habilitacao {
 
-	A("A"), B("B"), C("B"), D("D"), E("E");
+	A("A"), B("B"), C("C"), D("D"), E("E");
 
 	private String codigo;
 

@@ -44,9 +44,6 @@ public class Funcionario {
 	@OneToMany(mappedBy = "funcionario", cascade = CascadeType.PERSIST)
 	@JsonIgnore
 	List<FuncionarioVeiculo> veiculos = new ArrayList<>();
-	// TODO: falar com o professor so esse JsonIgnore, pq tava em uma especie de
-	// loop e isso resovel e perguntar se precisa tb colocar na outra classe
-	// veiculo.
 
 	@ElementCollection
 	private List<Penalizacao> penalizacao = new ArrayList<Penalizacao>();

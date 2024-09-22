@@ -33,9 +33,9 @@ public class FuncionarioController {
 		return funcionarioRepository.findById(id).get();
 	}
 
-	@GetMapping("/obterFuncionariosMesPenalizaIterable")
-	public Iterable<Funcionario> obterFuncionariosMesPenalizaIterable(int mes) {
-		return funcionarioRepository.obterFuncionariosMesPenalizacao(mes);
+	@GetMapping("/obterFuncionariosMesNaoPenalizacao")
+	public Iterable<Funcionario> obterFuncionariosMesNaoPenalizacao(int mes) {
+		return funcionarioRepository.obterFuncionariosMesNaoPenalizacao(mes);
 	}
 
 	@GetMapping("/obterFuncionarioPenalizacao")

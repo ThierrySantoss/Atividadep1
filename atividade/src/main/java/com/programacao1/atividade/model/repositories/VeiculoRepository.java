@@ -10,7 +10,7 @@ import com.programacao1.atividade.model.entities.veiculo.Veiculo;
 
 public interface VeiculoRepository extends JpaRepository<Veiculo, Integer> {
 
-	@Query(value = "SELECT * FROM veiculos WHERE chave LIKE %:ano%", nativeQuery = true)
+	@Query(value = "SELECT * FROM veiculos WHERE DATEPART(YEAR, ano_de_compra_do_veiculo) = :ano", nativeQuery = true)
 	public Iterable<Veiculo> obterCarrosDeUmAno(@Param("ano") String ano);
 
 	@Query(value = "Select * FROM veiculos WHERE modelo_veiculo = :modelo", nativeQuery = true)

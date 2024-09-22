@@ -15,15 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.programacao1.atividade.model.entities.FuncionarioVeiculo;
-import com.programacao1.atividade.model.entities.FuncionarioVeiculoAux;
+import com.programacao1.atividade.model.entities.FuncionarioVeiculoDTO;
 import com.programacao1.atividade.model.entities.funcionario.Funcionario;
 import com.programacao1.atividade.model.entities.veiculo.Veiculo;
 import com.programacao1.atividade.model.repositories.FuncionarioRepository;
-import com.programacao1.atividade.model.repositories.FuncionarioVeiculoAuxRepository;
 import com.programacao1.atividade.model.repositories.FuncionarioVeiculoRepository;
 import com.programacao1.atividade.model.repositories.VeiculoRepository;
-
-import jakarta.transaction.Transactional;
 
 @RestController
 @RequestMapping("/consecionaria/funcionarioVeiculo")
@@ -37,9 +34,6 @@ public class FuncionarioVeiculoController {
 
 	@Autowired
 	VeiculoRepository veiculoRepository;
-	
-	@Autowired
-	FuncionarioVeiculoAuxRepository funcionarioVeiculoAuxRepository;
 
 	@PostMapping
 	public FuncionarioVeiculo novaSaida(Funcionario funcionario, Veiculo veiculo) {
@@ -66,6 +60,13 @@ public class FuncionarioVeiculoController {
 		return funcionarioVeiculoRepository.findById(id).get();
 	}
 
+	@GetMapping("/FuncionarioQueMaisSaiu")
+	public Iterable<FuncionarioVeiculoDTO> maisSaiu() {
+		Pageable page = PageRequest.of(0, 3);
+		return funcionarioVeiculoRepository.maisPegouCarro(page);
+
+	}
+
 	@PutMapping
 	public FuncionarioVeiculo novaChegada(int id, double quilometragemDoVeiculo) {
 
@@ -85,16 +86,6 @@ public class FuncionarioVeiculoController {
 		} else {
 			return null;
 		}
-
-	}
-
-	@GetMapping("/obterMotoristasqueMaisDirigiram")
-	@Transactional
-	public Iterable<FuncionarioVeiculoAux> obterMotoristasqueMaisDirigiram() {
-		Pageable page = PageRequest.of(0, 3);
-		funcionarioVeiculoAuxRepository.deleteAll();
-		funcionarioVeiculoAuxRepository.atualizarTabela();
-		return funcionarioVeiculoAuxRepository.obterMotoristasqueMaisDirigiram(page);
 
 	}
 
